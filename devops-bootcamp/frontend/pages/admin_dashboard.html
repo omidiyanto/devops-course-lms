@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - DevOps Bootcamp</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10B981',
+                        secondary: '#064E3B',
+                        dark: '#1A1A1A',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/custom.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-dark text-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-dark border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-2xl font-bold text-primary">DevOps Bootcamp Admin</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="adminEmail" class="text-gray-300"></span>
+                    <button id="logoutBtn" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Dashboard Overview -->
+        <div class="px-4 py-6 sm:px-0">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <!-- Total Students Card -->
+                <div class="bg-gray-800 overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <dt class="text-sm font-medium text-gray-400 truncate">Total Students</dt>
+                        <dd class="mt-1 text-3xl font-semibold text-primary" id="totalStudents">0</dd>
+                    </div>
+                </div>
+
+                <!-- Pending Reviews Card -->
+                <div class="bg-gray-800 overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <dt class="text-sm font-medium text-gray-400 truncate">Pending Reviews</dt>
+                        <dd class="mt-1 text-3xl font-semibold text-primary" id="pendingReviews">0</dd>
+                    </div>
+                </div>
+
+                <!-- Pending Payments Card -->
+                <div class="bg-gray-800 overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <dt class="text-sm font-medium text-gray-400 truncate">Pending Payments</dt>
+                        <dd class="mt-1 text-3xl font-semibold text-primary" id="pendingPayments">0</dd>
+                    </div>
+                </div>
+
+                <!-- Active Courses Card -->
+                <div class="bg-gray-800 overflow-hidden shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <dt class="text-sm font-medium text-gray-400 truncate">Active Courses</dt>
+                        <dd class="mt-1 text-3xl font-semibold text-primary" id="activeCourses">0</dd>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="px-4 sm:px-0">
+            <div class="border-b border-gray-800">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button class="tab-button border-primary text-primary px-1 py-4 font-medium text-sm" 
+                            data-tab="submissions">
+                        Submissions
+                    </button>
+                    <button class="tab-button text-gray-400 hover:text-gray-300 px-1 py-4 font-medium text-sm"
+                            data-tab="payments">
+                        Payments
+                    </button>
+                    <button class="tab-button text-gray-400 hover:text-gray-300 px-1 py-4 font-medium text-sm"
+                            data-tab="courses">
+                        Course Management
+                    </button>
+                    <button class="tab-button text-gray-400 hover:text-gray-300 px-1 py-4 font-medium text-sm"
+                            data-tab="certificates">
+                        Certificates
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="mt-6">
+            <!-- Submissions Tab -->
+            <div id="submissionsTab" class="tab-content">
+                <div class="bg-gray-800 shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-medium text-white mb-4">Pending Submissions</h3>
+                        <div class="overflow-x-auto">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Course</th>
+                                        <th>Chapter</th>
+                                        <th>Submitted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="submissionsTableBody">
+                                    <!-- Submissions will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments Tab -->
+            <div id="paymentsTab" class="tab-content hidden">
+                <div class="bg-gray-800 shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-medium text-white mb-4">Payment Verification</h3>
+                        <div class="overflow-x-auto">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Amount</th>
+                                        <th>Payment Method</th>
+                                        <th>Transaction ID</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paymentsTableBody">
+                                    <!-- Payments will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Management Tab -->
+            <div id="coursesTab" class="tab-content hidden">
+                <div class="bg-gray-800 shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-white">Course Management</h3>
+                            <button onclick="showAddCourseModal()" class="btn-primary">
+                                Add New Course
+                            </button>
+                        </div>
+                        <div id="coursesList" class="space-y-4">
+                            <!-- Courses will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Certificates Tab -->
+            <div id="certificatesTab" class="tab-content hidden">
+                <div class="bg-gray-800 shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-medium text-white mb-4">Certificate Management</h3>
+                        <div class="overflow-x-auto">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Course</th>
+                                        <th>Completion Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="certificatesTableBody">
+                                    <!-- Certificates will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth.js"></script>
+    <!-- Custom JS -->
+    <script src="../assets/js/firebase-config.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script>
+        // Admin Dashboard specific JavaScript
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check admin authentication
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                window.location.href = '/';
+                return;
+            }
+
+            try {
+                const isAdmin = await window.auth.checkAdminStatus();
+                if (!isAdmin) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                // Load dashboard data
+                await loadDashboardData();
+                
+                // Set up tab switching
+                setupTabs();
+                
+                // Load initial tab content
+                await loadTabContent('submissions');
+            } catch (error) {
+                console.error('Failed to load admin dashboard:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to load dashboard data. Please try again.',
+                    background: '#1F2937',
+                    color: '#fff'
+                });
+            }
+        });
+
+        async function loadDashboardData() {
+            try {
+                const response = await window.auth.authenticatedFetch('/api/admin/dashboard');
+                updateDashboardStats(response);
+            } catch (error) {
+                console.error('Failed to load dashboard stats:', error);
+            }
+        }
+
+        function updateDashboardStats(data) {
+            document.getElementById('totalStudents').textContent = data.totalStudents || 0;
+            document.getElementById('pendingReviews').textContent = data.pendingReviews || 0;
+            document.getElementById('pendingPayments').textContent = data.pendingPayments || 0;
+            document.getElementById('activeCourses').textContent = data.activeCourses || 0;
+        }
+
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            });
+        }
+
+        async function switchTab(tabId) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(tab => {
+                if (tab.dataset.tab === tabId) {
+                    tab.classList.add('border-primary', 'text-primary');
+                    tab.classList.remove('text-gray-400');
+                } else {
+                    tab.classList.remove('border-primary', 'text-primary');
+                    tab.classList.add('text-gray-400');
+                }
+            });
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(`${tabId}Tab`).classList.remove('hidden');
+
+            // Load tab content
+            await loadTabContent(tabId);
+        }
+
+        async function loadTabContent(tabId) {
+            try {
+                const response = await window.auth.authenticatedFetch(`/api/admin/${tabId}`);
+                switch (tabId) {
+                    case 'submissions':
+                        updateSubmissionsTable(response.submissions);
+                        break;
+                    case 'payments':
+                        updatePaymentsTable(response.payments);
+                        break;
+                    case 'courses':
+                        updateCoursesList(response.courses);
+                        break;
+                    case 'certificates':
+                        updateCertificatesTable(response.certificates);
+                        break;
+                }
+            } catch (error) {
+                console.error(`Failed to load ${tabId} data:`, error);
+            }
+        }
+
+        // Table update functions
+        function updateSubmissionsTable(submissions) {
+            const tbody = document.getElementById('submissionsTableBody');
+            tbody.innerHTML = submissions.map(sub => `
+                <tr>
+                    <td>${sub.student}</td>
+                    <td>${sub.course}</td>
+                    <td>${sub.chapter}</td>
+                    <td>${new Date(sub.submitted_at).toLocaleDateString()}</td>
+                    <td>
+                        <button onclick="reviewSubmission('${sub.id}')" class="btn-primary text-sm">
+                            Review
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updatePaymentsTable(payments) {
+            const tbody = document.getElementById('paymentsTableBody');
+            tbody.innerHTML = payments.map(payment => `
+                <tr>
+                    <td>${payment.student}</td>
+                    <td>Rp ${payment.amount}</td>
+                    <td>${payment.method}</td>
+                    <td>${payment.transaction_id}</td>
+                    <td><span class="badge badge-warning">${payment.status}</span></td>
+                    <td>
+                        <button onclick="verifyPayment('${payment.id}')" class="btn-primary text-sm">
+                            Verify
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateCoursesList(courses) {
+            const coursesList = document.getElementById('coursesList');
+            coursesList.innerHTML = courses.map(course => `
+                <div class="course-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="text-lg font-medium text-white">${course.title}</h4>
+                            <p class="text-gray-400 mt-1">${course.description}</p>
+                        </div>
+                        <div class="space-x-2">
+                            <button onclick="editCourse('${course.id}')" class="btn-secondary text-sm">
+                                Edit
+                            </button>
+                            <button onclick="deleteCourse('${course.id}')" class="btn-secondary text-sm">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateCertificatesTable(certificates) {
+            const tbody = document.getElementById('certificatesTableBody');
+            tbody.innerHTML = certificates.map(cert => `
+                <tr>
+                    <td>${cert.student}</td>
+                    <td>${cert.course}</td>
+                    <td>${new Date(cert.completion_date).toLocaleDateString()}</td>
+                    <td><span class="badge badge-success">${cert.status}</span></td>
+                    <td>
+                        <button onclick="manageCertificate('${cert.id}')" class="btn-primary text-sm">
+                            Manage
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Action handlers
+        async function reviewSubmission(submissionId) {
+            const { value: feedback } = await Swal.fire({
+                title: 'Review Submission',
+                input: 'textarea',
+                inputLabel: 'Feedback',
+                inputPlaceholder: 'Enter your feedback...',
+                showCancelButton: true,
+                confirmButtonText: 'Approve',
+                cancelButtonText: 'Reject',
+                background: '#1F2937',
+                color: '#fff'
+            });
+
+            if (feedback !== undefined) {
+                try {
+                    await window.auth.authenticatedFetch('/api/admin/grade', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            submission_id: submissionId,
+                            grade: feedback ? 'pass' : 'fail',
+                            feedback
+                        })
+                    });
+
+                    await loadTabContent('submissions');
+                    showSuccess('Submission reviewed successfully');
+                } catch (error) {
+                    showError('Failed to review submission');
+                }
+            }
+        }
+
+        async function verifyPayment(paymentId) {
+            try {
+                await window.auth.authenticatedFetch('/api/admin/verify-payment', {
+                    method: 'POST',
+                    body: JSON.stringify({ payment_id: paymentId })
+                });
+
+                await loadTabContent('payments');
+                showSuccess('Payment verified successfully');
+            } catch (error) {
+                showError('Failed to verify payment');
+            }
+        }
+
+        function showAddCourseModal() {
+            Swal.fire({
+                title: 'Add New Course',
+                html: `
+                    <input id="courseTitle" class="form-input mb-4" placeholder="Course Title">
+                    <textarea id="courseDescription" class="form-input" placeholder="Course Description"></textarea>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Add Course',
+                background: '#1F2937',
+                color: '#fff',
+                preConfirm: () => {
+                    return {
+                        title: document.getElementById('courseTitle').value,
+                        description: document.getElementById('courseDescription').value
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    addCourse(result.value);
+                }
+            });
+        }
+
+        async function addCourse(courseData) {
+            try {
+                await window.auth.authenticatedFetch('/api/admin/course', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'add',
+                        course: courseData
+                    })
+                });
+
+                await loadTabContent('courses');
+                showSuccess('Course added successfully');
+            } catch (error) {
+                showError('Failed to add course');
+            }
+        }
+
+        // Helper functions
+        function showSuccess(message) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: message,
+                background: '#1F2937',
+                color: '#fff'
+            });
+        }
+
+        function showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: message,
+                background: '#1F2937',
+                color: '#fff'
+            });
+        }
+    </script>
+</body>
+</html>
